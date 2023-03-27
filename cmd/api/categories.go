@@ -4,30 +4,35 @@ import (
 	data "ecom-api/inernal/data/models"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
 )
 
 func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
 	if err != nil {
 		app.logger.Println(err)
+		app.sendInternalServerErrorResponse(w)
+		return
 	}
 
 	var parentId *int
 	var description *string
-	title := r.PostForm.Get("title")
-	tempDescription := r.PostForm.Get("description")
-    tempParentId := r.PostForm.Get("parent_id") 
+	title := r.FormValue("title")
+	tempDescription := r.FormValue("description")
+    tempParentId := r.FormValue("parent_id") 
     
 	if len(tempDescription) != 0 {
 		description = &tempDescription
 	}
 
 	if len(tempParentId) > 0 {
-		*parentId = app.convertToInt(tempParentId, 0)
+		*parentId, err = app.convertToInt(tempParentId)
+		if err != nil {
+			app.logger.Println(err)
+			app.sendInternalServerErrorResponse(w)
+			return
+		}
 	}
 
 	if len(title) == 0 {
@@ -35,12 +40,9 @@ func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	category := &data.Category{
-		Uuid:        uuid.New().String(),
 		Title:       title,
 		ParentId:    parentId,
 		Description: description,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
 	}
 	err = app.models.Category.Insert(category)
 
@@ -60,16 +62,29 @@ func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Req
 func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	limit := 20
 	offset := 0
-	err := r.ParseForm()
+	page := 1
+	
+	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
 	if err != nil {
-		app.logger.Fatal(err)
+		app.logger.Println(err)
+		app.sendInternalServerErrorResponse(w)
+		return
 	}
 
-	page := app.convertToInt(r.PostForm.Get("page"), 0)
+	if len(r.PostForm.Get("page")) > 0 {
+		page, err = app.convertToInt(r.PostForm.Get("page"))
+	} 
 
-	offset = page * limit
+	if err != nil {
+		app.logger.Println(err)
+		app.sendInternalServerErrorResponse(w)
+		return
+	}
+
+	offset = (page - 1) * limit
 	returnTotalCount, _ := strconv.ParseBool(r.Form.Get("includeTotalCount"))
 	response := make(map[string]interface{})
+	
 	if returnTotalCount != false {
 		totalCategories, err := app.models.Category.GetTotalCount()
 		if err != nil {
@@ -102,34 +117,42 @@ func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Reque
 
 func (app *application) updateCategoryHandler(w http.ResponseWriter, r *http.Request) {
 
-	err := r.ParseMultipartForm(2048)
+	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
 
 	if err != nil {
 		app.logger.Println("Unable to parse form")
 	}
 
-	uuid := chi.URLParam(r, "uuid")
+	id ,err := app.convertToInt(chi.URLParam(r, "id"))
 
-	category, err := app.models.Category.Get(uuid)
 	if err != nil {
-		app.logger.Printf("No category found for %s", uuid)
+		app.logger.Println(err)
+		app.sendInternalServerErrorResponse(w)
 		return
 	}
 
-	title := r.MultipartForm.Value["title"][0]
-	description := r.PostForm.Get("description")
+	category, err := app.models.Category.Get(id)
+	if err != nil {
+		app.logger.Printf("No category found for %d", id)
+		app.sendResponse(w, response{},http.StatusNotFound)
+		return
+	}
+
+	title := r.FormValue("title")
+	if r.Form.Has("description") {
+		description := r.FormValue("description")
+		category.Description = &description
+	}
 
 	if len(title) > 0 {
 		category.Title = title
 	}
 
-	if len(description) > 0 {
-		category.Description = &description
-	}
 
 	err = app.models.Category.Update(category)
 	if err != nil {
 		app.logger.Printf("Unable to update category %s", err)
+		app.sendInternalServerErrorResponse(w)
 		return
 	}
 
@@ -138,9 +161,15 @@ func (app *application) updateCategoryHandler(w http.ResponseWriter, r *http.Req
 }
 
 func (app *application) deleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	uuid := chi.URLParam(r, "uuid")
+	id, err := app.convertToInt(chi.URLParam(r, "id"))
 
-	err := app.models.Category.Delete(uuid)
+	if err != nil {
+		app.logger.Println(err)
+		app.sendInternalServerErrorResponse(w)
+		return
+	}
+
+	err = app.models.Category.Delete(id)
 
 	if err != nil {
 		app.logger.Printf("Unable to delete %s", err)

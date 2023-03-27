@@ -7,7 +7,6 @@ import (
 
 type Category struct {
 	Id          int64     `json:"-"`
-	Uuid        string    `json:"uuid"`
 	ParentId    *int      `json:"parentId"`
 	Title       string    `json:"title"`
 	Description *string   `json:"description"`
@@ -21,9 +20,9 @@ type CategoryModel struct {
 }
 
 func (categoryModel CategoryModel) Insert(category *Category) error {
-	query := `INSERT INTO categories (uuid, title, description, parent_id, created_at, updated_at)
-                VALUES(?, ?, ?, ?, ?, ?)`
-	args := []interface{}{category.Uuid, category.Title, category.Description, category.ParentId, category.CreatedAt, category.UpdatedAt}
+	query := `INSERT INTO categories (title, description, parent_id)
+                VALUES(?, ?, ?)`
+	args := []interface{}{category.Title, category.Description, category.ParentId}
 	_, err := categoryModel.Db.Exec(query, args...)
 	if err != nil {
 		return err
@@ -34,19 +33,20 @@ func (categoryModel CategoryModel) Insert(category *Category) error {
 func (categoryModel CategoryModel) Update(category *Category) error {
 	query := `UPDATE categories
     SET title = ?, description = ?
-    where uuid = ? LIMIT 1`
+    where id = ? LIMIT 1`
 
-	_, err := categoryModel.Db.Exec(query, category.Title, category.Description, category.Uuid)
+	_, err := categoryModel.Db.Exec(query, category.Title, category.Description, category.Id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (categoryModel CategoryModel) Delete(uuid string) error {
+func (categoryModel CategoryModel) Delete(id int) error {
 	query := `DELETE FROM categories 
-    WHERE uuid = ?LIMIT 1`
-	_, err := categoryModel.Db.Exec(query, uuid)
+    WHERE id = ?
+	LIMIT 1`
+	_, err := categoryModel.Db.Exec(query, id)
 
 	if err != nil {
 		return err
@@ -55,10 +55,10 @@ func (categoryModel CategoryModel) Delete(uuid string) error {
 }
 
 func (categoryModel CategoryModel) GetAll(limit int, offset int) ([]*Category, error) {
-	query := `SELECT count(id), uuid, parent_id, title, description
+	query := `SELECT id, parent_id, title, description
     FROM categories
-     where deleted_at IS NULL 
-      GROUP BY id LIMIT ? OFFSET ?`
+    where deleted_at IS NULL 
+    LIMIT ? OFFSET ?`
 	rows, err := categoryModel.Db.Query(query, limit, offset)
 
 	if err != nil {
@@ -67,13 +67,11 @@ func (categoryModel CategoryModel) GetAll(limit int, offset int) ([]*Category, e
 	defer rows.Close()
 
 	categories := []*Category{}
-	totalCategories := 0
 	for rows.Next() {
 		var category Category
 
 		err := rows.Scan(
-			&totalCategories,
-			&category.Uuid,
+			&category.Id,
 			&category.ParentId,
 			&category.Title,
 			&category.Description,
@@ -87,13 +85,13 @@ func (categoryModel CategoryModel) GetAll(limit int, offset int) ([]*Category, e
 	return categories, nil
 }
 
-func (categoryModel CategoryModel) Get(uuid string) (*Category, error) {
-	query := `SELECT uuid, title, parent_id, description FROM categories 
-            where uuid = ?`
+func (categoryModel CategoryModel) Get(id int) (*Category, error) {
+	query := `SELECT id, title, parent_id, description FROM categories 
+            where id = ?`
 
 	var category Category
 
-	err := categoryModel.Db.QueryRow(query, uuid).Scan(&category.Uuid, &category.Title, &category.ParentId, &category.Description)
+	err := categoryModel.Db.QueryRow(query, id).Scan(&category.Id, &category.Title, &category.ParentId, &category.Description)
 	if err != nil {
 		return nil, err
 	}
@@ -111,5 +109,20 @@ func (categoryModel CategoryModel) GetTotalCount() (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	
 	return totalCount, nil
+}
+
+func (categoryModel CategoryModel) GetCategoryId(id int) (*Category, error) {
+	query := `SELECT id FROM categories 
+            where id = ?`
+
+	var category Category
+
+	err := categoryModel.Db.QueryRow(query, id).Scan(&category.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &category, nil
 }

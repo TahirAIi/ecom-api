@@ -2,8 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
+	"time"
 )
 
 type response map[string]interface{}
@@ -27,11 +31,41 @@ func (app *application) sendInternalServerErrorResponse(w http.ResponseWriter) {
 	w.Write([]byte(response))
 }
 
-func (app *application) convertToInt(value string, defaultValue int) int {
+func (app *application) convertToInt(value string) (int, error) {
 	val, err := strconv.Atoi(value)
 	if err != nil {
-		return defaultValue
+		return 0, err
 	}
 
-	return val
+	return val, nil
+}
+
+func (app *application) uploadFile(key string, r *http.Request) (*string, error) {
+	file, fileHeader, err := r.FormFile("main_picture")
+
+	if err == nil {
+		defer file.Close()
+		err = os.Mkdir("../../uploads", os.ModePerm)
+		if err != nil {
+			return nil, err
+		}
+
+		fileName := strconv.Itoa(int(time.Now().UnixNano())) + fileHeader.Filename
+		destinationFile, err := os.Create(fmt.Sprintf("../uploads/%s", fileName))
+		if err != nil {
+			return nil, err
+		}
+		defer destinationFile.Close()
+
+		_, err = io.Copy(destinationFile, file)
+		if err != nil {
+			return nil, err
+		}
+		return &fileName, nil
+	}
+	return nil, err
+}
+
+func (app *application) GenerateFileUrl(fileName string) string {
+	return os.Getenv("FILES_BASE_URL") + "/files/" + fileName
 }

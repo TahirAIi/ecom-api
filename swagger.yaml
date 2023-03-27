@@ -1,0 +1,57 @@
+definitions:
+    Product:
+        properties:
+            category_id:
+                format: int32
+                type: integer
+                x-go-name: CategoryId
+            description:
+                type: string
+                x-go-name: Description
+            id:
+                format: int32
+                type: integer
+                x-go-name: Id
+            main_picture:
+                type: string
+                x-go-name: MainPicture
+            price:
+                format: int64
+                type: integer
+                x-go-name: Price
+            title:
+                type: string
+                x-go-name: Title
+        type: object
+        x-go-package: ecom-api/inernal/data/models
+info: {}
+paths:
+    /categories/{id}/products:
+        get:
+            description: 'Returns a list of products '
+            operationId: listProducts
+            parameters:
+                - format: int64
+                  in: path
+                  name: id
+                  required: true
+                  type: integer
+                  x-go-name: Id
+                - format: int64
+                  in: query
+                  name: limit
+                  type: integer
+                  x-go-name: Limit
+            responses:
+                "200":
+                    $ref: '#/responses/ProductsResponse'
+            tags:
+                - products
+responses:
+    ProductsResponse:
+        description: A list of products
+        schema:
+            items:
+                $ref: '#/definitions/Product'
+            type: array
+swagger: "2.0"

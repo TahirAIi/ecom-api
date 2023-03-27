@@ -1,0 +1,1 @@
+ALTER TABLE categories ADD uuid char(36) NOT NULL;
