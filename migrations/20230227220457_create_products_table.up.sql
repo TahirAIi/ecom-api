@@ -1,4 +1,4 @@
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
     id int NOT NULL AUTO_INCREMENT,
     category_id int NULL,
     title varchar(50) NOT NULL,

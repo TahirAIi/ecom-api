@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -68,4 +69,9 @@ func (app *application) uploadFile(key string, r *http.Request) (*string, error)
 
 func (app *application) GenerateFileUrl(fileName string) string {
 	return os.Getenv("FILES_BASE_URL") + "/files/" + fileName
+}
+
+func GetBearerToken(r *http.Request) (string) {
+	prefix := "Bearer "
+	return strings.TrimPrefix(r.Header.Get("Authorization"), prefix)
 }

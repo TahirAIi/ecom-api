@@ -1,4 +1,4 @@
-CREATE TABLE categories (
+CREATE TABLE IF EXISTS categories (
     id int NOT NULL AUTO_INCREMENT,
 
     uuid char(36) NOT NULL,

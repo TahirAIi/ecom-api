@@ -12,21 +12,31 @@ import (
 func (app *application) routes() http.Handler {
 	router := chi.NewRouter()
 
+	router.Group(func(r chi.Router) {
+		r.Use(app.IsAdmin())
+		r.Post("/categories", app.createCategoryHandler)
+		r.Patch("/categories/{id}", app.updateCategoryHandler)
+		r.Delete("/categories/{id}", app.deleteCategoryHandler)
+
+		r.Post("/categories/{id}/products", app.createProductHandler)
+		r.Patch("/categories/{id}/products/{product_id}", app.updateProductHandler)
+		r.Delete("/categories/{id}/products/{product_id}", app.deleteProductHandler)
+	})
+
 	router.Get("/categories", app.listCategoryHandler)
 	router.Get("/categories/{id}", app.listCategoryHandler)
-	router.Post("/categories", app.createCategoryHandler)
-	router.Patch("/categories/{id}", app.updateCategoryHandler)
-	router.Delete("/categories/{id}", app.deleteCategoryHandler)
 
 	router.Get("/categories/{id}/products", app.listProductHandler)
 	router.Get("/categories/{id}/products/{product_id}", app.getProductHandler)
-	router.Post("/categories/{id}/products", app.createProductHandler)
-	router.Patch("/categories/{id}/products/{product_id}", app.updateProductHandler)
-	router.Delete("/categories/{id}/products/{product_id}", app.deleteProductHandler)
+
+	router.Post("/users", app.createUserHandler)
+	router.Post("/authorize", app.authUserHandler)
 
 	workDir, _ := os.Getwd()
 	filesDir := http.Dir(filepath.Join(workDir, "uploads"))
 	FileServer(router, "/files", filesDir)
+
+
 
 	return router
 }
