@@ -15,19 +15,19 @@ func (app *application) routes() http.Handler {
 	router.Group(func(r chi.Router) {
 		r.Use(app.IsAdmin())
 		r.Post("/categories", app.createCategoryHandler)
-		r.Patch("/categories/{id}", app.updateCategoryHandler)
-		r.Delete("/categories/{id}", app.deleteCategoryHandler)
+		r.Patch("/categories/{category_id}", app.updateCategoryHandler)
+		r.Delete("/categories/{category_id}", app.deleteCategoryHandler)
 
-		r.Post("/categories/{id}/products", app.createProductHandler)
-		r.Patch("/categories/{id}/products/{product_id}", app.updateProductHandler)
-		r.Delete("/categories/{id}/products/{product_id}", app.deleteProductHandler)
+		r.Post("/categories/{category_id}/products", app.createProductHandler)
+		r.Patch("/categories/{category_id}/products/{product_id}", app.updateProductHandler)
+		r.Delete("/categories/{category_id}/products/{product_id}", app.deleteProductHandler)
 	})
 
 	router.Get("/categories", app.listCategoryHandler)
-	router.Get("/categories/{id}", app.listCategoryHandler)
+	router.Get("/categories/{category_id}", app.listCategoryHandler)
 
-	router.Get("/categories/{id}/products", app.listProductHandler)
-	router.Get("/categories/{id}/products/{product_id}", app.getProductHandler)
+	router.Get("/categories/{category_id}/products", app.listProductHandler)
+	router.Get("/categories/{category_id}/products/{product_id}", app.getProductHandler)
 
 	router.Post("/users", app.createUserHandler)
 	router.Post("/authorize", app.authUserHandler)

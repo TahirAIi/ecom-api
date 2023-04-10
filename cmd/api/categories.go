@@ -11,7 +11,7 @@ import (
 func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -20,8 +20,8 @@ func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Req
 	var description *string
 	title := r.FormValue("title")
 	tempDescription := r.FormValue("description")
-    tempParentId := r.FormValue("parent_id") 
-    
+	tempParentId := r.FormValue("parent_id")
+
 	if len(tempDescription) != 0 {
 		description = &tempDescription
 	}
@@ -29,7 +29,7 @@ func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Req
 	if len(tempParentId) > 0 {
 		*parentId, err = app.convertToInt(tempParentId)
 		if err != nil {
-			app.logger.Println(err)
+			app.log(err)
 			app.sendInternalServerErrorResponse(w)
 			return
 		}
@@ -47,14 +47,14 @@ func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Req
 	err = app.models.Category.Insert(category)
 
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
 
 	err = app.sendResponse(w, response{"category": category}, http.StatusOK)
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 	}
 }
@@ -63,20 +63,20 @@ func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Reque
 	limit := 20
 	offset := 0
 	page := 1
-	
+
 	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
 
 	if len(r.PostForm.Get("page")) > 0 {
 		page, err = app.convertToInt(r.PostForm.Get("page"))
-	} 
+	}
 
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -84,11 +84,11 @@ func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Reque
 	offset = (page - 1) * limit
 	returnTotalCount, _ := strconv.ParseBool(r.Form.Get("includeTotalCount"))
 	response := make(map[string]interface{})
-	
+
 	if returnTotalCount != false {
 		totalCategories, err := app.models.Category.GetTotalCount()
 		if err != nil {
-			app.logger.Println(err)
+			app.log(err)
 			app.sendInternalServerErrorResponse(w)
 			return
 		}
@@ -97,14 +97,14 @@ func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
 
 	categories, err := app.models.Category.GetAll(limit, offset)
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -120,21 +120,22 @@ func (app *application) updateCategoryHandler(w http.ResponseWriter, r *http.Req
 	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
 
 	if err != nil {
-		app.logger.Println("Unable to parse form")
+		app.log(err)
+		app.sendInternalServerErrorResponse(w)
+		return
 	}
 
-	id ,err := app.convertToInt(chi.URLParam(r, "id"))
+	id, err := app.convertToInt(chi.URLParam(r, "category_id"))
 
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
 
 	category, err := app.models.Category.Get(id)
 	if err != nil {
-		app.logger.Printf("No category found for %d", id)
-		app.sendResponse(w, response{},http.StatusNotFound)
+		app.sendResponse(w, response{}, http.StatusNotFound)
 		return
 	}
 
@@ -148,10 +149,9 @@ func (app *application) updateCategoryHandler(w http.ResponseWriter, r *http.Req
 		category.Title = title
 	}
 
-
 	err = app.models.Category.Update(category)
 	if err != nil {
-		app.logger.Printf("Unable to update category %s", err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -161,10 +161,10 @@ func (app *application) updateCategoryHandler(w http.ResponseWriter, r *http.Req
 }
 
 func (app *application) deleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := app.convertToInt(chi.URLParam(r, "id"))
+	id, err := app.convertToInt(chi.URLParam(r, "category_id"))
 
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -172,7 +172,7 @@ func (app *application) deleteCategoryHandler(w http.ResponseWriter, r *http.Req
 	err = app.models.Category.Delete(id)
 
 	if err != nil {
-		app.logger.Printf("Unable to delete %s", err)
+		app.log(err)
 		return
 	}
 	app.sendResponse(w, response{}, http.StatusNoContent)

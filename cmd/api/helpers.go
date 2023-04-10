@@ -71,7 +71,11 @@ func (app *application) GenerateFileUrl(fileName string) string {
 	return os.Getenv("FILES_BASE_URL") + "/files/" + fileName
 }
 
-func GetBearerToken(r *http.Request) (string) {
+func GetBearerToken(r *http.Request) string {
 	prefix := "Bearer "
 	return strings.TrimPrefix(r.Header.Get("Authorization"), prefix)
+}
+
+func (app application) log(err error) {
+	app.logger.Println(err)
 }

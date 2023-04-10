@@ -11,15 +11,12 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-
-
-
 func (app *application) createProductHandler(w http.ResponseWriter, r *http.Request) {
 	product := &data.Product{}
 
 	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -36,7 +33,7 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 	fileName, err := app.uploadFile("main_picture", r)
 
 	if err != nil && !errors.Is(err, http.ErrMissingFile) {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -45,10 +42,10 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 		product.MainPicture = *fileName
 	}
 
-	val, err := app.convertToInt(chi.URLParam(r, "id"))
+	val, err := app.convertToInt(chi.URLParam(r, "category_id"))
 
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -77,7 +74,7 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 	product.Price = int(price * 100)
 	err = app.models.Product.Insert(product)
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -90,14 +87,14 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 
 	productId, err := app.convertToInt(chi.URLParam(r, "product_id"))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
 
-	categoryId, err := app.convertToInt(chi.URLParam(r, "id"))
+	categoryId, err := app.convertToInt(chi.URLParam(r, "category_id"))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -109,7 +106,7 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 			app.sendResponse(w, response{}, http.StatusNotFound)
 			return
 		default:
-			app.logger.Println(err)
+			app.log(err)
 			app.sendInternalServerErrorResponse(w)
 			return
 		}
@@ -117,7 +114,7 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 
 	err = r.ParseMultipartForm(int64(app.config.multipartFormSize))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -125,7 +122,7 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 	if (len(r.FormValue("category_id"))) > 0 {
 		val, err := app.convertToInt(r.FormValue("category_id"))
 		if err != nil {
-			app.logger.Println(err)
+			app.log(err)
 			app.sendInternalServerErrorResponse(w)
 			return
 		}
@@ -152,15 +149,15 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 
 		product.Price = int(price * 100)
 	}
-	if _, _, err = r.FormFile("main_picture"); err != http.ErrMissingFile{
+	if _, _, err = r.FormFile("main_picture"); err != http.ErrMissingFile {
 		fileName, err := app.uploadFile("main_picture", r)
 
 		if err != nil && !errors.Is(err, http.ErrMissingFile) {
-			app.logger.Println(err)
+			app.log(err)
 			app.sendInternalServerErrorResponse(w)
 			return
 		}
-	
+
 		if fileName != nil {
 			product.MainPicture = *fileName
 		}
@@ -170,7 +167,7 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 
 	err = app.models.Product.Update(categoryId, &product)
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -181,14 +178,14 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request) {
 	productId, err := app.convertToInt(chi.URLParam(r, "product_id"))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
 
-	categoryId, err := app.convertToInt(chi.URLParam(r, "id"))
+	categoryId, err := app.convertToInt(chi.URLParam(r, "category_id"))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -202,7 +199,7 @@ func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request
 			app.sendResponse(w, response{"message": "Resource not found"}, http.StatusNotFound)
 			return
 		default:
-			app.logger.Println(err)
+			app.log(err)
 			app.sendInternalServerErrorResponse(w)
 			return
 		}
@@ -211,16 +208,19 @@ func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request
 	app.sendResponse(w, response{"product": product}, http.StatusOK)
 }
 
-//swagger:route GET /categories/{id}/products products listProducts
-// Returns a list of products 
-// responses: 
-//  200: ProductsResponse 
+// Returns a list of products
+// responses:
+//
+//	200: ProductsResponse
+//
 // A list of productst
+//
+//swagger:route GET /categories/{id}/products products listProducts
 //swagger:response
 func (app *application) listProductHandler(w http.ResponseWriter, r *http.Request) {
-	categoryId, err := app.convertToInt(chi.URLParam(r, "id"))
+	categoryId, err := app.convertToInt(chi.URLParam(r, "category_id"))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -230,10 +230,10 @@ func (app *application) listProductHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err  = r.ParseForm()
+	err = r.ParseForm()
 
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -241,7 +241,7 @@ func (app *application) listProductHandler(w http.ResponseWriter, r *http.Reques
 	if len(r.FormValue("page")) > 0 {
 		page, err = app.convertToInt(r.FormValue("page"))
 		if err != nil {
-			app.logger.Println(err)
+			app.log(err)
 			app.sendInternalServerErrorResponse(w)
 			return
 		}
@@ -256,14 +256,14 @@ func (app *application) listProductHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
 
 	totalCount, err := app.models.Product.Count(int(categoryId))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -274,14 +274,14 @@ func (app *application) listProductHandler(w http.ResponseWriter, r *http.Reques
 func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	productId, err := app.convertToInt(chi.URLParam(r, "product_id"))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
 
-	categoryId, err := app.convertToInt(chi.URLParam(r, "id"))
+	categoryId, err := app.convertToInt(chi.URLParam(r, "category_id"))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
@@ -298,7 +298,7 @@ func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Requ
 
 	err = app.models.Product.Delete(int32(categoryId), int32(productId))
 	if err != nil {
-		app.logger.Println(err)
+		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
