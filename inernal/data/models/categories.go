@@ -6,8 +6,8 @@ import (
 )
 
 type Category struct {
-	Id          int64     `json:"-"`
-	ParentId    *int      `json:"parentId"`
+	Id          int32     `json:"-"`
+	ParentId    *int32      `json:"parentId"`
 	Title       string    `json:"title"`
 	Description *string   `json:"description"`
 	CreatedAt   time.Time `json:"-"`
@@ -54,7 +54,7 @@ func (categoryModel CategoryModel) Delete(id int) error {
 	return nil
 }
 
-func (categoryModel CategoryModel) GetAll(limit int, offset int) ([]*Category, error) {
+func (categoryModel CategoryModel) GetAll(limit int32, offset int32) ([]*Category, error) {
 	query := `SELECT id, parent_id, title, description
     FROM categories
     where deleted_at IS NULL 

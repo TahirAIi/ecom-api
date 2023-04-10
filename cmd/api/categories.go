@@ -16,7 +16,7 @@ func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	var parentId *int
+	var parentId *int32
 	var description *string
 	title := r.FormValue("title")
 	tempDescription := r.FormValue("description")
@@ -60,9 +60,9 @@ func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Req
 }
 
 func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Request) {
-	limit := 20
-	offset := 0
-	page := 1
+	limit := int32(20)
+	offset := int32(0)
+	page := int32(1)
 
 	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
 	if err != nil {

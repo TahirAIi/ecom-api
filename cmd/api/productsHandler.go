@@ -6,7 +6,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -54,7 +53,7 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 		app.sendResponse(w, response{"message": "Category id is required"}, http.StatusUnprocessableEntity)
 		return
 	}
-	product.CategoryId = int32(val)
+	product.CategoryId = val
 
 	if len(title) == 0 {
 		app.sendResponse(w, response{"message": "Title can't be empty"}, http.StatusUnprocessableEntity)
@@ -71,7 +70,7 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	product.Price = int(price * 100)
+	product.Price = int32(price * 100)
 	err = app.models.Product.Insert(product)
 	if err != nil {
 		app.log(err)
@@ -126,7 +125,7 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 			app.sendInternalServerErrorResponse(w)
 			return
 		}
-		product.CategoryId = int32(val)
+		product.CategoryId = val
 	}
 
 	if len(r.FormValue("title")) > 0 {
@@ -147,7 +146,7 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
-		product.Price = int(price * 100)
+		product.Price = int32(price * 100)
 	}
 	if _, _, err = r.FormFile("main_picture"); err != http.ErrMissingFile {
 		fileName, err := app.uploadFile("main_picture", r)
@@ -162,8 +161,6 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 			product.MainPicture = *fileName
 		}
 	}
-
-	product.UpdatedAt = time.Now()
 
 	err = app.models.Product.Update(categoryId, &product)
 	if err != nil {
@@ -237,7 +234,8 @@ func (app *application) listProductHandler(w http.ResponseWriter, r *http.Reques
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
-	page := 0
+	var page int32
+	page = 0
 	if len(r.FormValue("page")) > 0 {
 		page, err = app.convertToInt(r.FormValue("page"))
 		if err != nil {
@@ -247,9 +245,9 @@ func (app *application) listProductHandler(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	limit := 20
+	limit := int32(20)
 	offset := (page - 1) * limit
-	products, err := app.models.Product.GetAll(int32(categoryId), limit, offset)
+	products, err := app.models.Product.GetAll(categoryId, limit, offset)
 
 	for _, product := range products {
 		product.MainPicture = app.GenerateFileUrl(product.MainPicture)
@@ -296,7 +294,7 @@ func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = app.models.Product.Delete(int32(categoryId), int32(productId))
+	err = app.models.Product.Delete(categoryId, productId)
 	if err != nil {
 		app.log(err)
 		app.sendInternalServerErrorResponse(w)

@@ -10,7 +10,7 @@ type Product struct {
 	CategoryId  int32     `json:"category_id"`
 	Title       string    `json:"title"`
 	Description *string   `json:"description"`
-	Price       int       `json:"price"`
+	Price       int32       `json:"price"`
 	MainPicture string    `json:"main_picture"`
 	CreatedAt   time.Time `json:"-"`
 	UpdatedAt   time.Time `json:"-"`
@@ -38,7 +38,7 @@ func (productModel ProductModel) Insert(product *Product) error {
 	return nil
 }
 
-func (productModel ProductModel) Get(categoryId int, productId int, product *Product) error {
+func (productModel ProductModel) Get(categoryId int32, productId int32, product *Product) error {
 	query := `SELECT id, category_id, title, price, main_picture, description
 	FROM products
 	WHERE category_id = ? AND id = ?
@@ -50,7 +50,7 @@ func (productModel ProductModel) Get(categoryId int, productId int, product *Pro
 	return nil
 }
 
-func (productModel ProductModel) GetAll(categoryId int32, limit int, offset int) ([]*Product, error) {
+func (productModel ProductModel) GetAll(categoryId int32, limit int32, offset int32) ([]*Product, error) {
 	query := `SELECT id, category_id, title, description, price, main_picture
 		FROM products
 		WHERE category_id = ?
@@ -80,7 +80,7 @@ func (productModel ProductModel) GetAll(categoryId int32, limit int, offset int)
 	return products, nil
 }
 
-func (productModel ProductModel) Update(caegoryId int, product *Product) error {
+func (productModel ProductModel) Update(caegoryId int32, product *Product) error {
 	query := `UPDATE products SET
 		category_id = ?, title = ?, description = ?, main_picture = ?
 		WHERE category_id = ? AND id = ?

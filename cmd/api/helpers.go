@@ -32,13 +32,13 @@ func (app *application) sendInternalServerErrorResponse(w http.ResponseWriter) {
 	w.Write([]byte(response))
 }
 
-func (app *application) convertToInt(value string) (int, error) {
-	val, err := strconv.Atoi(value)
+func (app *application) convertToInt(value string) (int32, error) {
+	val, err := strconv.ParseInt(value, 10, 32)
 	if err != nil {
 		return 0, err
 	}
 
-	return val, nil
+	return int32(val), nil
 }
 
 func (app *application) uploadFile(key string, r *http.Request) (*string, error) {
