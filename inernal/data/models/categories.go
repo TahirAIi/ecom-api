@@ -42,7 +42,7 @@ func (categoryModel CategoryModel) Update(category *Category) error {
 	return nil
 }
 
-func (categoryModel CategoryModel) Delete(id int) error {
+func (categoryModel CategoryModel) Delete(id int32) error {
 	query := `DELETE FROM categories 
     WHERE id = ?
 	LIMIT 1`
@@ -85,7 +85,7 @@ func (categoryModel CategoryModel) GetAll(limit int32, offset int32) ([]*Categor
 	return categories, nil
 }
 
-func (categoryModel CategoryModel) Get(id int) (*Category, error) {
+func (categoryModel CategoryModel) Get(id int32) (*Category, error) {
 	query := `SELECT id, title, parent_id, description FROM categories 
             where id = ?`
 

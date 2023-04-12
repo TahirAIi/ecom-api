@@ -10,6 +10,7 @@ package main
 //     - application/json
 //
 // swagger:meta
+
 //go:generate swagger generate spec
 
 import (

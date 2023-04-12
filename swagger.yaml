@@ -16,7 +16,7 @@ definitions:
                 type: string
                 x-go-name: MainPicture
             price:
-                format: int64
+                format: int32
                 type: integer
                 x-go-name: Price
             title:
@@ -26,9 +26,103 @@ definitions:
         x-go-package: ecom-api/inernal/data/models
 info: {}
 paths:
+    /categories/{category_id}/products:
+        patch:
+            operationId: updateProduct
+            parameters:
+                - in: formData
+                  name: title
+                  required: true
+                  type: string
+                  x-go-name: Title
+                - in: formData
+                  name: description
+                  type: string
+                  x-go-name: Description
+                - format: int64
+                  in: formData
+                  name: price
+                  required: true
+                  type: integer
+                  x-go-name: Price
+                - in: formData
+                  name: main_picture
+                  type: file
+                  x-go-name: MainPicture
+            tags:
+                - products
+        post:
+            consumes:
+                - multipart/form-data
+            operationId: createProduct
+            parameters:
+                - in: formData
+                  name: title
+                  required: true
+                  type: string
+                  x-go-name: Title
+                - in: formData
+                  name: description
+                  type: string
+                  x-go-name: Description
+                - format: int64
+                  in: formData
+                  name: price
+                  required: true
+                  type: integer
+                  x-go-name: Price
+                - in: formData
+                  name: main_picture
+                  type: file
+                  x-go-name: MainPicture
+            produces:
+                - application/json
+            responses:
+                "200":
+                    $ref: '#/responses/ProductResponse'
+            tags:
+                - products
+    /categories/{category_id}/products/{product_id}:
+        delete:
+            operationId: deleteProductItem
+            parameters:
+                - description: Id of category
+                  format: int32
+                  in: path
+                  name: category_id
+                  required: true
+                  type: integer
+                - description: Id of product
+                  format: int32
+                  in: path
+                  name: product_id
+                  required: true
+                  type: integer
+            produces:
+                - application/json
+            tags:
+                - products
+        get:
+            operationId: GetProductItem
+            parameters:
+                - description: Id of category
+                  format: int32
+                  in: path
+                  name: category_id
+                  required: true
+                  type: integer
+                - description: Id of product
+                  format: int32
+                  in: path
+                  name: product_id
+                  required: true
+                  type: integer
+            produces:
+                - application/json
+            tags:
+                - products
     /categories/{id}/products:
         get:
-            description: 'Returns a list of products '
             operationId: listProducts
             parameters:
                 - format: int64
@@ -42,12 +136,13 @@ paths:
                   name: limit
                   type: integer
                   x-go-name: Limit
-            responses:
-                "200":
-                    $ref: '#/responses/ProductsResponse'
             tags:
                 - products
 responses:
+    ProductResponse:
+        description: A single product
+        schema:
+            $ref: '#/definitions/Product'
     ProductsResponse:
         description: A list of products
         schema:
