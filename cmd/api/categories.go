@@ -1,13 +1,29 @@
 package main
 
 import (
+	"database/sql"
 	data "ecom-api/inernal/data/models"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
 
+
+//swagger:route POST /categories Categories createCategory
+// Creates a category.
+//
+//Consumes:
+//	- multipart/form-data
+//
+//Produces:
+//	- application/json
+//Parameters:
+//	CategoryBody
+//responses:
+//	200: CategoryResponse
+//swagger:response
 func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
 	if err != nil {
@@ -58,6 +74,21 @@ func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Req
 		app.sendInternalServerErrorResponse(w)
 	}
 }
+
+// swagger:route GET /categories Categories listCategories
+// Lists all the categories.
+//
+//	Consumes:
+//	- application/json
+//
+//	Produces:
+//	- application/json
+//
+// responses:
+//
+//	200: listCategories
+//
+//swagger:response
 
 func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	limit := int32(20)
@@ -115,6 +146,67 @@ func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Reque
 
 }
 
+
+//swagger:route GET /categories/{category_id} Categories GetCategoryItem
+//Get single category.
+//
+//Produces:
+//	- application/json
+// Parameters:
+//	+ name: category_id
+//	in: path
+//	description: Id of category
+//	required: true
+//	type: integer
+//	format: int32
+//
+// responses:
+//
+//	200: CategoryResponse
+//
+//swagger:response
+
+func (app *application) getCategoryHandler(w http.ResponseWriter, r *http.Request) {
+	categoryId, err := app.convertToInt(chi.URLParam(r, "category_id"))
+	if err != nil {
+		app.sendInternalServerErrorResponse(w)
+	}
+
+	category, err := app.models.Category.Get(categoryId)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			app.sendResponse(w, response{"message": "Resource not found"}, http.StatusNotFound)
+			return
+		default:
+			app.log(err)
+			app.sendInternalServerErrorResponse(w)
+			return
+		}
+	}
+
+	app.sendResponse(w, response{"category" : category}, http.StatusOK)
+}
+
+//swagger:route PATCH /categories/{category_id} Categories updateCategory
+// Updates a category.
+// 
+// Consumes:
+//   - multipart/form-data
+//
+// Produces:
+//   - application/json
+//
+// Parameters:
+//
+//	CategoryBody
+//
+// responses:
+//
+//	200: CategoryResponse
+//
+//swagger:response
+
 func (app *application) updateCategoryHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
@@ -160,6 +252,24 @@ func (app *application) updateCategoryHandler(w http.ResponseWriter, r *http.Req
 	return
 }
 
+//swagger:route DELETE /categories/{category_id} Categories deleteCategoryItem
+//Delete single category.
+//
+//Produces:
+//	- application/json
+// Parameters:
+//	+ name: category_id
+//	in: path
+//	description: Id of category
+//	required: true
+//	type: integer
+//	format: int32
+
+// responses:
+//
+//	204: []
+//
+//swagger:response
 func (app *application) deleteCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := app.convertToInt(chi.URLParam(r, "category_id"))
 

@@ -24,7 +24,7 @@ func (app *application) routes() http.Handler {
 	})
 
 	router.Get("/categories", app.listCategoryHandler)
-	router.Get("/categories/{category_id}", app.listCategoryHandler)
+	router.Get("/categories/{category_id}", app.getCategoryHandler)
 
 	router.Get("/categories/{category_id}/products", app.listProductHandler)
 	router.Get("/categories/{category_id}/products/{product_id}", app.getProductHandler)

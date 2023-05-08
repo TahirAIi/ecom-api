@@ -69,6 +69,20 @@ func (app *application) createUserHandler(w http.ResponseWriter, r *http.Request
 
 }
 
+
+//swagger:route POST /authorize Auth authUser
+//Creates a token.
+//
+//Consumes:
+//	- multipart/form-data
+//
+//Produces:
+//	- application/json
+//Parameters:
+//	AuthBody
+//responses:
+//	200: AuthResponse
+//swagger:response
 func (app *application) authUserHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
 	if err != nil {

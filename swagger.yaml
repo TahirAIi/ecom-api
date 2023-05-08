@@ -1,4 +1,18 @@
 definitions:
+    Category:
+        properties:
+            description:
+                type: string
+                x-go-name: Description
+            parentId:
+                format: int32
+                type: integer
+                x-go-name: ParentId
+            title:
+                type: string
+                x-go-name: Title
+        type: object
+        x-go-package: ecom-api/inernal/data/models
     Product:
         properties:
             category_id:
@@ -26,8 +40,147 @@ definitions:
         x-go-package: ecom-api/inernal/data/models
 info: {}
 paths:
+    /authorize:
+        post:
+            consumes:
+                - multipart/form-data
+            operationId: authUser
+            parameters:
+                - in: formData
+                  name: email
+                  required: true
+                  type: string
+                  x-go-name: Email
+                - in: formData
+                  name: password
+                  required: true
+                  type: string
+                  x-go-name: Password
+            produces:
+                - application/json
+            responses:
+                "200":
+                    $ref: '#/responses/AuthResponse'
+            summary: Creates a token.
+            tags:
+                - Auth
+    /categories:
+        get:
+            consumes:
+                - application/json
+            operationId: listCategories
+            parameters:
+                - format: int64
+                  in: path
+                  name: id
+                  required: true
+                  type: integer
+                  x-go-name: Id
+                - format: int64
+                  in: query
+                  name: limit
+                  type: integer
+                  x-go-name: Limit
+            produces:
+                - application/json
+            responses:
+                "200":
+                    $ref: '#/responses/listCategories'
+            summary: Lists all the categories.
+            tags:
+                - Categories
+        post:
+            consumes:
+                - multipart/form-data
+            operationId: createCategory
+            parameters:
+                - in: formData
+                  name: title
+                  required: true
+                  type: string
+                  x-go-name: Title
+                - in: formData
+                  name: description
+                  type: string
+                  x-go-name: Description
+                - format: int64
+                  in: formData
+                  name: parent_id
+                  required: true
+                  type: integer
+                  x-go-name: ParentId
+            produces:
+                - application/json
+            responses:
+                "200":
+                    $ref: '#/responses/CategoryResponse'
+            summary: Creates a category.
+            tags:
+                - Categories
+    /categories/{category_id}:
+        delete:
+            operationId: deleteCategoryItem
+            parameters:
+                - description: Id of category
+                  format: int32
+                  in: path
+                  name: category_id
+                  required: true
+                  type: integer
+            produces:
+                - application/json
+            summary: Delete single category.
+            tags:
+                - Categories
+        get:
+            operationId: GetCategoryItem
+            parameters:
+                - description: Id of category
+                  format: int32
+                  in: path
+                  name: category_id
+                  required: true
+                  type: integer
+            produces:
+                - application/json
+            responses:
+                "200":
+                    $ref: '#/responses/CategoryResponse'
+            summary: Get single category.
+            tags:
+                - Categories
+        patch:
+            consumes:
+                - multipart/form-data
+            operationId: updateCategory
+            parameters:
+                - in: formData
+                  name: title
+                  required: true
+                  type: string
+                  x-go-name: Title
+                - in: formData
+                  name: description
+                  type: string
+                  x-go-name: Description
+                - format: int64
+                  in: formData
+                  name: parent_id
+                  required: true
+                  type: integer
+                  x-go-name: ParentId
+            produces:
+                - application/json
+            responses:
+                "200":
+                    $ref: '#/responses/CategoryResponse'
+            summary: Updates a category.
+            tags:
+                - Categories
     /categories/{category_id}/products:
         patch:
+            consumes:
+                - multipart/form-data
             operationId: updateProduct
             parameters:
                 - in: formData
@@ -49,8 +202,12 @@ paths:
                   name: main_picture
                   type: file
                   x-go-name: MainPicture
+            responses:
+                "200":
+                    $ref: '#/responses/ProductResponse'
+            summary: Updates a product.
             tags:
-                - products
+                - Products
         post:
             consumes:
                 - multipart/form-data
@@ -80,8 +237,9 @@ paths:
             responses:
                 "200":
                     $ref: '#/responses/ProductResponse'
+            summary: Creates a product.
             tags:
-                - products
+                - Products
     /categories/{category_id}/products/{product_id}:
         delete:
             operationId: deleteProductItem
@@ -100,8 +258,9 @@ paths:
                   type: integer
             produces:
                 - application/json
+            summary: Delete single product.
             tags:
-                - products
+                - Products
         get:
             operationId: GetProductItem
             parameters:
@@ -119,10 +278,16 @@ paths:
                   type: integer
             produces:
                 - application/json
+            responses:
+                "200":
+                    $ref: '#/responses/ProductResponse'
+            summary: List single product.
             tags:
-                - products
+                - Products
     /categories/{id}/products:
         get:
+            consumes:
+                - application/json
             operationId: listProducts
             parameters:
                 - format: int64
@@ -136,14 +301,36 @@ paths:
                   name: limit
                   type: integer
                   x-go-name: Limit
+            responses:
+                "200":
+                    $ref: '#/responses/listProducts'
+            summary: Lists products of a category.
             tags:
-                - products
+                - Products
 responses:
+    AuthResponse:
+        description: Returns token
+        schema:
+            properties:
+                token:
+                    type: string
+                    x-go-name: Token
+            type: object
+    CategoryResponse:
+        description: A single category
+        schema:
+            $ref: '#/definitions/Category'
     ProductResponse:
         description: A single product
         schema:
             $ref: '#/definitions/Product'
-    ProductsResponse:
+    listCategories:
+        description: A list of categories
+        schema:
+            items:
+                $ref: '#/definitions/Category'
+            type: array
+    listProducts:
         description: A list of products
         schema:
             items:

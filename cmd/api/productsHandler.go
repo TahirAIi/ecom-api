@@ -10,8 +10,9 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-// Creates a product
-//swagger:route POST /categories/{category_id}/products products createProduct
+//swagger:route POST /categories/{category_id}/products Products createProduct
+// Creates a product.
+//
 //Consumes:
 //	- multipart/form-data
 //
@@ -94,22 +95,18 @@ func (app *application) createProductHandler(w http.ResponseWriter, r *http.Requ
 	app.sendResponse(w, response{"product": product}, http.StatusCreated)
 }
 
-// Updates a product
+//swagger:route PATCH /categories/{category_id}/products Products updateProduct
+// Updates a product.
+//
 // Consumes:
 //   - multipart/form-data
 //
-// Produces:
-//   - application/json
-//
 // Parameters:
-//
 //	ProductBody
 //
 // responses:
 //
 //	200: ProductResponse
-//
-//swagger:route PATCH /categories/{category_id}/products products updateProduct
 //swagger:response
 func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Request) {
 	var product data.Product
@@ -201,9 +198,10 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 
 	app.sendResponse(w, response{"product": product}, http.StatusCreated)
 }
-
-//Get single product
-//swagger:route GET /categories/{category_id}/products/{product_id} products GetProductItem
+ 
+//swagger:route GET /categories/{category_id}/products/{product_id} Products GetProductItem
+//List single product.
+//
 //Produces:
 //	- application/json
 // Parameters:
@@ -220,7 +218,7 @@ func (app *application) updateProductHandler(w http.ResponseWriter, r *http.Requ
 //	required: true
 //	type: integer
 //	format: int32
-
+//
 // responses:
 //
 //	200: ProductResponse
@@ -259,21 +257,15 @@ func (app *application) getProductHandler(w http.ResponseWriter, r *http.Request
 	app.sendResponse(w, response{"product": product}, http.StatusOK)
 }
 
-// Returns a list of products
-//
-// A list of productst
+//swagger:route GET /categories/{id}/products Products listProducts
+// Lists products of a category.
 //
 //	Consumes:
 //	- application/json
 //
-//	Produces:
-//	- application/json
-//
 // responses:
+//	200: listProducts
 //
-//	200: ProductsResponse
-//
-//swagger:route GET /categories/{id}/products products listProducts
 //swagger:response
 func (app *application) listProductHandler(w http.ResponseWriter, r *http.Request) {
 	categoryId, err := app.convertToInt(chi.URLParam(r, "category_id"))
@@ -330,30 +322,32 @@ func (app *application) listProductHandler(w http.ResponseWriter, r *http.Reques
 	app.sendResponse(w, response{"products": products, "total": totalCount}, http.StatusOK)
 }
 
-//Delete single product
-//swagger:route DELETE /categories/{category_id}/products/{product_id} products deleteProductItem
-//Produces:
-//	- application/json
-// Parameters:
-//	+ name: category_id
-//	in: path
-//	description: Id of category
-//	required: true
-//	type: integer
-//	format: int32
-//
-//	+ name: product_id
-//	in: path
-//	description: Id of product
-//	required: true
-//	type: integer
-//	format: int32
 
-// responses:
+//	swagger:route DELETE /categories/{category_id}/products/{product_id} Products deleteProductItem
+//	Delete single product.
 //
-//	204: []
+//	Produces:
+//		- application/json
+// 	Parameters:
+//		+ name: category_id
+//		in: path
+//		description: Id of category
+//		required: true
+//		type: integer
+//		format: int32
 //
-//swagger:response
+//		+ name: product_id
+//		in: path
+//		description: Id of product
+//		required: true
+//		type: integer
+//		format: int32
+
+//	responses:
+//
+//		204: []
+//
+//	swagger:response
 func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	productId, err := app.convertToInt(chi.URLParam(r, "product_id"))
 	if err != nil {
