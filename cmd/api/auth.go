@@ -10,14 +10,14 @@ import (
 type JWTClaims struct {
 	jwt.RegisteredClaims
 	Email string
-	Name string 
+	Name  string
 }
 
 func GenerateJWT(email string, name string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, JWTClaims{
 		RegisteredClaims: jwt.RegisteredClaims{},
-		Email: email,
-		Name: name,
+		Email:            email,
+		Name:             name,
 	})
 
 	signedToken, err := token.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))
@@ -37,9 +37,9 @@ func Validate(token string) (JWTClaims, error) {
 		return jwtClaims, err
 	}
 
-	 if !parsedToken.Valid {
+	if !parsedToken.Valid {
 		return jwtClaims, errors.New("Invalid token")
-	 }
+	}
 
-	 return jwtClaims, nil
+	return jwtClaims, nil
 }

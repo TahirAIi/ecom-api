@@ -36,8 +36,6 @@ func (app *application) routes() http.Handler {
 	filesDir := http.Dir(filepath.Join(workDir, "uploads"))
 	FileServer(router, "/files", filesDir)
 
-
-
 	return router
 }
 

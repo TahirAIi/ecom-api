@@ -10,19 +10,23 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-
-//swagger:route POST /categories Categories createCategory
 // Creates a category.
 //
-//Consumes:
-//	- multipart/form-data
+// Consumes:
+//   - multipart/form-data
 //
-//Produces:
-//	- application/json
-//Parameters:
+// Produces:
+//   - application/json
+//
+// Parameters:
+//
 //	CategoryBody
-//responses:
+//
+// responses:
+//
 //	200: CategoryResponse
+//
+//swagger:route POST /categories Categories createCategory
 //swagger:response
 func (app *application) createCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
@@ -146,7 +150,6 @@ func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Reque
 
 }
 
-
 //swagger:route GET /categories/{category_id} Categories GetCategoryItem
 //Get single category.
 //
@@ -185,12 +188,12 @@ func (app *application) getCategoryHandler(w http.ResponseWriter, r *http.Reques
 		}
 	}
 
-	app.sendResponse(w, response{"category" : category}, http.StatusOK)
+	app.sendResponse(w, response{"category": category}, http.StatusOK)
 }
 
 //swagger:route PATCH /categories/{category_id} Categories updateCategory
 // Updates a category.
-// 
+//
 // Consumes:
 //   - multipart/form-data
 //

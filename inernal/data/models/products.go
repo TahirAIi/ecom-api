@@ -10,7 +10,7 @@ type Product struct {
 	CategoryId  int32     `json:"category_id"`
 	Title       string    `json:"title"`
 	Description *string   `json:"description"`
-	Price       int32       `json:"price"`
+	Price       int32     `json:"price"`
 	MainPicture string    `json:"main_picture"`
 	CreatedAt   time.Time `json:"-"`
 	UpdatedAt   time.Time `json:"-"`
@@ -25,7 +25,7 @@ func (productModel ProductModel) Insert(product *Product) error {
 	query := `INSERT INTO products (category_id, title, price,description, main_picture)
 	VALUES(?,?,?,?,?)`
 
-	result , err := productModel.Db.Exec(query, product.CategoryId, product.Title, product.Price, product.Description, product.MainPicture)
+	result, err := productModel.Db.Exec(query, product.CategoryId, product.Title, product.Price, product.Description, product.MainPicture)
 
 	if err != nil {
 		return err

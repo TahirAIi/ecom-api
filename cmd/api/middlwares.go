@@ -6,7 +6,7 @@ func (app application) IsAdmin() func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			token := GetBearerToken(r)
-			if len(token) < 0 || !app.IsAdminUser(token){
+			if len(token) < 0 || !app.IsAdminUser(token) {
 				w.WriteHeader(http.StatusUnauthorized)
 				return
 			}
@@ -15,9 +15,8 @@ func (app application) IsAdmin() func(next http.Handler) http.Handler {
 	}
 }
 
-
 func (app application) IsAdminUser(token string) bool {
-	jwtClaims , err := Validate(token)
+	jwtClaims, err := Validate(token)
 	if err != nil {
 		return false
 	}

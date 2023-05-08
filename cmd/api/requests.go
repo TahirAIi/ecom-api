@@ -33,13 +33,10 @@ type ProductBody struct {
 
 // swagger:parameters listCategories
 type CategoriesParams struct {
-	// in: path
-	// required: true
-	Id int `json:"id"`
-
 	// in: query
 	Limit int `json:"limit"`
 }
+
 //swagger:parameters createCategory updateCategory
 type CategoryBody struct {
 	//in: formData

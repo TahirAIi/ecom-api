@@ -42,8 +42,6 @@ info: {}
 paths:
     /authorize:
         post:
-            consumes:
-                - multipart/form-data
             operationId: authUser
             parameters:
                 - in: formData
@@ -56,12 +54,6 @@ paths:
                   required: true
                   type: string
                   x-go-name: Password
-            produces:
-                - application/json
-            responses:
-                "200":
-                    $ref: '#/responses/AuthResponse'
-            summary: Creates a token.
             tags:
                 - Auth
     /categories:
@@ -70,12 +62,6 @@ paths:
                 - application/json
             operationId: listCategories
             parameters:
-                - format: int64
-                  in: path
-                  name: id
-                  required: true
-                  type: integer
-                  x-go-name: Id
                 - format: int64
                   in: query
                   name: limit
@@ -90,8 +76,6 @@ paths:
             tags:
                 - Categories
         post:
-            consumes:
-                - multipart/form-data
             operationId: createCategory
             parameters:
                 - in: formData
@@ -109,12 +93,6 @@ paths:
                   required: true
                   type: integer
                   x-go-name: ParentId
-            produces:
-                - application/json
-            responses:
-                "200":
-                    $ref: '#/responses/CategoryResponse'
-            summary: Creates a category.
             tags:
                 - Categories
     /categories/{category_id}:
@@ -179,8 +157,6 @@ paths:
                 - Categories
     /categories/{category_id}/products:
         patch:
-            consumes:
-                - multipart/form-data
             operationId: updateProduct
             parameters:
                 - in: formData
@@ -202,10 +178,6 @@ paths:
                   name: main_picture
                   type: file
                   x-go-name: MainPicture
-            responses:
-                "200":
-                    $ref: '#/responses/ProductResponse'
-            summary: Updates a product.
             tags:
                 - Products
         post:
@@ -263,31 +235,10 @@ paths:
                 - Products
         get:
             operationId: GetProductItem
-            parameters:
-                - description: Id of category
-                  format: int32
-                  in: path
-                  name: category_id
-                  required: true
-                  type: integer
-                - description: Id of product
-                  format: int32
-                  in: path
-                  name: product_id
-                  required: true
-                  type: integer
-            produces:
-                - application/json
-            responses:
-                "200":
-                    $ref: '#/responses/ProductResponse'
-            summary: List single product.
             tags:
                 - Products
     /categories/{id}/products:
         get:
-            consumes:
-                - application/json
             operationId: listProducts
             parameters:
                 - format: int64
@@ -301,10 +252,6 @@ paths:
                   name: limit
                   type: integer
                   x-go-name: Limit
-            responses:
-                "200":
-                    $ref: '#/responses/listProducts'
-            summary: Lists products of a category.
             tags:
                 - Products
 responses:

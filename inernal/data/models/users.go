@@ -6,14 +6,14 @@ import (
 )
 
 type User struct {
-	ID int32 `json:"id"`
-	FullName string `json:"fullname"`
-	Email string `json:"email"`
-	Password string `json:"-"`
-	IsAdmin bool `json:"is_admin"`
+	ID        int32     `json:"id"`
+	FullName  string    `json:"fullname"`
+	Email     string    `json:"email"`
+	Password  string    `json:"-"`
+	IsAdmin   bool      `json:"is_admin"`
 	CreatedAt time.Time `json:"-"`
-	UpatedAt time.Time	`json:"-"`
-	DeletedAt time.Time	`json:"-"`
+	UpatedAt  time.Time `json:"-"`
+	DeletedAt time.Time `json:"-"`
 }
 
 type UserModel struct {
@@ -23,8 +23,8 @@ type UserModel struct {
 func (userModel UserModel) Insert(user *User) error {
 	query := `INSERT INTO users (full_name, email, password, is_admin)
 			values(?,?,?,?)`
-	
-	result ,err := userModel.Db.Exec(query, user.FullName, user.Email, user.Password, user.IsAdmin)
+
+	result, err := userModel.Db.Exec(query, user.FullName, user.Email, user.Password, user.IsAdmin)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func (userModel UserModel) Insert(user *User) error {
 	if err != nil {
 		return err
 	}
-	user.ID = int32(id) 
+	user.ID = int32(id)
 	return nil
 }
 

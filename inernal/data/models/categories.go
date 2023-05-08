@@ -7,7 +7,7 @@ import (
 
 type Category struct {
 	Id          int32     `json:"-"`
-	ParentId    *int32      `json:"parentId"`
+	ParentId    *int32    `json:"parentId"`
 	Title       string    `json:"title"`
 	Description *string   `json:"description"`
 	CreatedAt   time.Time `json:"-"`
@@ -109,7 +109,7 @@ func (categoryModel CategoryModel) GetTotalCount() (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	
+
 	return totalCount, nil
 }
 
