@@ -99,15 +99,9 @@ func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Reque
 	offset := int32(0)
 	page := int32(1)
 
-	err := r.ParseMultipartForm(int64(app.config.multipartFormSize))
-	if err != nil {
-		app.log(err)
-		app.sendInternalServerErrorResponse(w)
-		return
-	}
-
-	if len(r.PostForm.Get("page")) > 0 {
-		page, err = app.convertToInt(r.PostForm.Get("page"))
+	var err error
+	if len(chi.URLParam(r, "page")) > 0 {
+		page, err = app.convertToInt(chi.URLParam(r, "page"))
 	}
 
 	if err != nil {
@@ -117,7 +111,7 @@ func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	offset = (page - 1) * limit
-	returnTotalCount, _ := strconv.ParseBool(r.Form.Get("includeTotalCount"))
+	returnTotalCount, _ := strconv.ParseBool(chi.URLParam(r,"includeTotalCount"))
 	response := make(map[string]interface{})
 
 	if returnTotalCount != false {

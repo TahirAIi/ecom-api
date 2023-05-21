@@ -16,6 +16,7 @@ package main
 import (
 	"database/sql"
 	data "ecom-api/inernal/data/models"
+	"fmt"
 	"log"
 	"os"
 
@@ -63,7 +64,7 @@ func main() {
 }
 
 func openDbConnection() (*sql.DB, error) {
-	db, err := sql.Open("mysql", "dev:tahirdev@tcp(localhost:3306)/api-ecom")
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",os.Getenv("DB_USER"), os.Getenv("DB_PASSWORD"), os.Getenv("DB_HOST"), os.Getenv("DB_PORT"), os.Getenv("DB_NAME")))
 
 	if err != nil {
 		return nil, err

@@ -50,12 +50,12 @@ func (productModel ProductModel) Get(categoryId int32, productId int32, product 
 	return nil
 }
 
-func (productModel ProductModel) GetAll(categoryId int32, limit int32, offset int32) ([]*Product, error) {
+func (productModel ProductModel) GetAll(categoryId int32, limit int32, offset int32, searchTerm string) ([]*Product, error) {
 	query := `SELECT id, category_id, title, description, price, main_picture
 		FROM products
 		WHERE category_id = ?
 		LIMIT ? OFFSET ?`
-
+	searchTerm = "%"+searchTerm+"%"
 	var products []*Product
 	rows, err := productModel.Db.Query(query, categoryId, limit, offset)
 	if err != nil {

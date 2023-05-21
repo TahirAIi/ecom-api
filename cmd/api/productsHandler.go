@@ -285,17 +285,16 @@ func (app *application) listProductHandler(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err = r.ParseForm()
-
-	if err != nil {
-		app.log(err)
-		app.sendInternalServerErrorResponse(w)
-		return
+	searchTerm := ""
+	if len(chi.URLParam(r, "search")) > 0 {
+		searchTerm = chi.URLParam(r, "search")
 	}
+	
+
 	var page int32
 	page = 0
-	if len(r.FormValue("page")) > 0 {
-		page, err = app.convertToInt(r.FormValue("page"))
+	if len(chi.URLParam(r, "page")) > 0 {
+		page, err = app.convertToInt(chi.URLParam(r, "page"))
 		if err != nil {
 			app.log(err)
 			app.sendInternalServerErrorResponse(w)
@@ -305,17 +304,17 @@ func (app *application) listProductHandler(w http.ResponseWriter, r *http.Reques
 
 	limit := int32(20)
 	offset := (page - 1) * limit
-	products, err := app.models.Product.GetAll(categoryId, limit, offset)
-
-	for _, product := range products {
-		product.MainPicture = app.GenerateFileUrl(product.MainPicture)
-	}
-
+	products, err := app.models.Product.GetAll(categoryId, limit, offset, searchTerm)
 	if err != nil {
 		app.log(err)
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
+	for _, product := range products {
+		product.MainPicture = app.GenerateFileUrl(product.MainPicture)
+	}
+
+
 
 	totalCount, err := app.models.Product.Count(int(categoryId))
 	if err != nil {
@@ -371,7 +370,7 @@ func (app *application) deleteProductHandler(w http.ResponseWriter, r *http.Requ
 		app.sendResponse(w, response{"message": "Category id can not be less than 1"}, http.StatusUnprocessableEntity)
 		return
 	}
-
+ 
 	if productId < 1 {
 		app.sendResponse(w, response{"message": "Product id can not be less than 1"}, http.StatusUnprocessableEntity)
 		return
