@@ -8,6 +8,9 @@ type ProductsParams struct {
 
 	// in: query
 	Limit int `json:"limit"`
+
+	// in: query
+	SearchTerm string `json:"search_term"`
 }
 
 //
@@ -35,6 +38,12 @@ type ProductBody struct {
 type CategoriesParams struct {
 	// in: query
 	Limit int `json:"limit"`
+
+	// in: query
+	SearchTerm string `json:"search_term"`
+
+	// in:query
+	IncludeTotalCount bool `json:"include_total_count"`
 }
 
 //swagger:parameters createCategory updateCategory

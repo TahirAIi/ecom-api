@@ -100,8 +100,8 @@ func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Reque
 	page := int32(1)
 
 	var err error
-	if len(chi.URLParam(r, "page")) > 0 {
-		page, err = app.convertToInt(chi.URLParam(r, "page"))
+	if len(r.URL.Query().Get("page")) > 0 {
+		page, err = app.convertToInt(r.URL.Query().Get("page"))
 	}
 
 	if err != nil {
@@ -111,7 +111,7 @@ func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	offset = (page - 1) * limit
-	returnTotalCount, _ := strconv.ParseBool(chi.URLParam(r,"includeTotalCount"))
+	returnTotalCount, _ := strconv.ParseBool(r.URL.Query().Get("include_total_count"))
 	response := make(map[string]interface{})
 
 	if returnTotalCount != false {
@@ -130,11 +130,18 @@ func (app *application) listCategoryHandler(w http.ResponseWriter, r *http.Reque
 		app.sendInternalServerErrorResponse(w)
 		return
 	}
+	searchTerm := r.URL.Query().Get("search_term")
+	searchTerm = "%"+searchTerm+"%" 
 
-	categories, err := app.models.Category.GetAll(limit, offset)
+	categories, err := app.models.Category.GetAll(limit, offset, r.URL.Query().Get("search_term"))
 	if err != nil {
-		app.log(err)
-		app.sendInternalServerErrorResponse(w)
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			app.sendResponse(w, make(map[string]interface{}), http.StatusNotFound)
+		default:
+			app.log(err)
+			app.sendInternalServerErrorResponse(w)
+		}
 		return
 	}
 

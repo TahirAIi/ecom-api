@@ -6,7 +6,7 @@ import (
 )
 
 type Category struct {
-	Id          int32     `json:"-"`
+	Id          int32     `json:"id"`
 	ParentId    *int32    `json:"parentId"`
 	Title       string    `json:"title"`
 	Description *string   `json:"description"`
@@ -54,12 +54,22 @@ func (categoryModel CategoryModel) Delete(id int32) error {
 	return nil
 }
 
-func (categoryModel CategoryModel) GetAll(limit int32, offset int32) ([]*Category, error) {
-	query := `SELECT id, parent_id, title, description
-    FROM categories
-    where deleted_at IS NULL 
-    LIMIT ? OFFSET ?`
-	rows, err := categoryModel.Db.Query(query, limit, offset)
+func (categoryModel CategoryModel) GetAll(limit int32, offset int32, searchTerm string) ([]*Category, error) {
+	query := "SELECT id, parent_id, title, description FROM categories "
+	whereClause := "WHERE deleted_at IS NULL "
+	args := []interface{}{}
+
+	if (len(searchTerm) > 0) {
+		whereClause += `AND (title LIKE ? OR description LIKE ?) `
+		searchTerm = "%"+searchTerm+"%" 
+		args = append(args, searchTerm)
+		args = append(args, searchTerm)
+	}
+    query += whereClause + "LIMIT ? OFFSET ?"
+	args = append(args, limit)
+	args = append(args, offset)
+
+	rows, err := categoryModel.Db.Query(query, args...)
 
 	if err != nil {
 		return nil, err

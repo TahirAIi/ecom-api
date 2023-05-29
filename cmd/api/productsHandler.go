@@ -281,20 +281,20 @@ func (app *application) listProductHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	if categoryId < 1 {
-		app.sendResponse(w, response{"message": "Category should not be less than 1"}, http.StatusUnprocessableEntity)
+		app.sendResponse(w, response{"message": "Category id should not be less than 1"}, http.StatusUnprocessableEntity)
 		return
 	}
 
 	searchTerm := ""
-	if len(chi.URLParam(r, "search")) > 0 {
-		searchTerm = chi.URLParam(r, "search")
+	if len(r.URL.Query().Get("search_term")) > 0 {
+		searchTerm = r.URL.Query().Get("search_term")
 	}
 	
 
 	var page int32
 	page = 0
-	if len(chi.URLParam(r, "page")) > 0 {
-		page, err = app.convertToInt(chi.URLParam(r, "page"))
+	if len(r.URL.Query().Get("page")) > 0 {
+		page, err = app.convertToInt(r.URL.Query().Get("page"))
 		if err != nil {
 			app.log(err)
 			app.sendInternalServerErrorResponse(w)
@@ -306,15 +306,18 @@ func (app *application) listProductHandler(w http.ResponseWriter, r *http.Reques
 	offset := (page - 1) * limit
 	products, err := app.models.Product.GetAll(categoryId, limit, offset, searchTerm)
 	if err != nil {
-		app.log(err)
-		app.sendInternalServerErrorResponse(w)
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			app.sendResponse(w, response{}, http.StatusNotFound)
+		default:
+			app.log(err)
+			app.sendInternalServerErrorResponse(w)
+		}
 		return
 	}
 	for _, product := range products {
 		product.MainPicture = app.GenerateFileUrl(product.MainPicture)
 	}
-
-
 
 	totalCount, err := app.models.Product.Count(int(categoryId))
 	if err != nil {

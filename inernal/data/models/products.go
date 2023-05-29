@@ -51,16 +51,27 @@ func (productModel ProductModel) Get(categoryId int32, productId int32, product 
 }
 
 func (productModel ProductModel) GetAll(categoryId int32, limit int32, offset int32, searchTerm string) ([]*Product, error) {
-	query := `SELECT id, category_id, title, description, price, main_picture
-		FROM products
-		WHERE category_id = ?
-		LIMIT ? OFFSET ?`
-	searchTerm = "%"+searchTerm+"%"
+	query := "SELECT id, category_id, title, description, price, main_picture FROM products "
+	whereClause := "WHERE category_id = ? "
+
+	args := []interface{}{categoryId}
+	if len(searchTerm) > 0 {
+		whereClause += "AND (title LIKE ? OR description LIKE ?) "
+		searchTerm = "%" + searchTerm + "%"
+		args = append(args, searchTerm)
+		args = append(args, searchTerm)
+	}
+	query += whereClause + "LIMIT ? OFFSET ?"
+	args = append(args, limit)
+	args = append(args, offset)
+
 	var products []*Product
-	rows, err := productModel.Db.Query(query, categoryId, limit, offset)
+	rows, err := productModel.Db.Query(query, args...)
 	if err != nil {
 		return products, err
 	}
+
+	defer rows.Close()
 
 	for rows.Next() {
 		var product Product
@@ -77,6 +88,16 @@ func (productModel ProductModel) GetAll(categoryId int32, limit int32, offset in
 		}
 		products = append(products, &product)
 	}
+
+	err = rows.Err()
+	if err != nil {
+		return products, err
+	}
+
+	if len(products) < 1 {
+		return nil, sql.ErrNoRows
+	}
+
 	return products, nil
 }
 

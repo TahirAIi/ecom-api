@@ -4,6 +4,10 @@ definitions:
             description:
                 type: string
                 x-go-name: Description
+            id:
+                format: int32
+                type: integer
+                x-go-name: Id
             parentId:
                 format: int32
                 type: integer
@@ -67,6 +71,14 @@ paths:
                   name: limit
                   type: integer
                   x-go-name: Limit
+                - in: query
+                  name: search_term
+                  type: string
+                  x-go-name: SearchTerm
+                - in: query
+                  name: include_total_count
+                  type: boolean
+                  x-go-name: IncludeTotalCount
             produces:
                 - application/json
             responses:
@@ -252,6 +264,10 @@ paths:
                   name: limit
                   type: integer
                   x-go-name: Limit
+                - in: query
+                  name: search_term
+                  type: string
+                  x-go-name: SearchTerm
             tags:
                 - Products
 responses:
